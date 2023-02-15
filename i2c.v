@@ -4,6 +4,9 @@ module IDEC_i2c(
     input wire i,
     output reg out
 );
+
+
+
 //parameter for state define
 parameter [3:0] IDLE = 4'd0, START = 4'd1, DEV_SEL = 4'd2, READ = 4'd3, WRITE = 4'd4;
 parameter [3:0] ACK = 4'd5, REG_SEL = 4'd6, DATA = 4'd7, NACK = 4'd8, STOP = 4'd9;
