@@ -109,7 +109,8 @@ always @ (*) begin
 		else begin
 			next_state = STATE_STOP;
 		end
-
+		
+		default next_state = STATE_IDLE;
 	endcase
 end
 endmodule
