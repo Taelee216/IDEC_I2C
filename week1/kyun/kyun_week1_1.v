@@ -1,8 +1,11 @@
 module IDEC_i2c(
     input wire clk,
     input wire rst,
-    input wire i,
-    output reg out
+    input wire rw_sel,
+    input wire [6:0] dev_addr,
+    input wire [7:0] data_in,
+    input wire
+    output reg [7:0] data_out,
 );
 
 
@@ -38,5 +41,17 @@ always @(state, i) begin
     endcase
 end
 
+//State machine
+always @ (posedge clk) begin
+    case(state)
+    IDLE:   //dev_addr, reg_addr
+    begin
+        dev_addr <= 0;
+
+    end
+
+    START:  //send start condition
+    endcase
+end
 
 endmodule
