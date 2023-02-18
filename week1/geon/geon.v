@@ -22,6 +22,7 @@ reg [3:0] state, next;
 reg [7:0] data;
 reg [7:0] reg_addr;
 reg [6:0] device_addr;
+
 always @(posedge clk, negedge rst)begin
     if(!rst) state <= IDLE;
     else state <= next;
@@ -33,7 +34,7 @@ reg start;
 
 always @(*)begin
     case(state)
-    idle : if(start) begin next <= start; end else next <= idle;
+    idle : if(i) begin next <= start; end else next <= idle;
 
     start :  next <= dev_sel; 
 

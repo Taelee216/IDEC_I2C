@@ -15,7 +15,7 @@ output	reg	 SCL_out
 localparam STATE_IDLE 				= 4'd0;
 localparam STATE_START 				= 4'd1;
 localparam STATE_DEV_SEL 			= 4'd2;
-localparam STATE_RW				= 4'd3;
+localparam STATE_RW				    = 4'd3;
 localparam STATE_ACK_W			 	= 4'd4;
 
 localparam STATE_REG_SEL	 		= 4'd5;
@@ -71,20 +71,20 @@ always @ (*) begin
 		end
 
 		STATE_DEV_SEL:
-		 if (count == 8'd22 ) begin
+			if (count == 8'd22 ) begin
 			next_state = STATE_RW;
-		end
+			end
 		else begin
 			next_state = STATE_DEV_SEL;
-            	end
+            end
 		
 		STATE_RW:
-		 if (count == 8'd21) begin
+			if (count == 8'd21) begin
 			next_state = STATE_ACK_W;
 		end
 		else begin
 			next_state = STATE_IDLE;
-            	end
+            end
 
 		STATE_ACK_W :  				
 		if ((count == 8'd20) & (SDA_in == 0)) begin
