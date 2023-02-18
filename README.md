@@ -1,8 +1,12 @@
 # IDEC_I2C
-**할일**
+**Schedule**
 -----------
-### 1. Master 구현하기 - 2/24
-###     test bench로 error proof -3/1
-### 2. slave 
-### 3. Top module
-### 4. Quartus STA
+### 1. Design I2C_Master Module
+###     1   -   1) Understand the I2C Protocol      (2/08)
+###     1   -   2) Draw flow chart                  (2/11)
+###     1   -   3) Implemente with Verilog code     (2/25)
+###     1   -   4) Verify with Simualtion           (2/28)
+### 2. Design I2C_Slave Module 
+### 3. Synthesize as Top module
+### 4. STA with Quartus
+
