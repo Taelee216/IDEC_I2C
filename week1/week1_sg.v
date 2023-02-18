@@ -1,8 +1,8 @@
 module I2C_Master (
 
         input wire rst,
-		input wire clk,
-		input wire sel,
+	input wire clk,
+	input wire sel,
         input wire [7:0] Data_in,
         input wire [7:0] Reg_addr,
         input wire [6:0] Dev_addr,
