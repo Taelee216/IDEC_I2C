@@ -1,27 +1,32 @@
-module I2C_Master (
+ module I2C_Master (
     input wire clk,
     input wire nrst,
     input wire s_bit,
-    input wire RW_SEL,
-    input wire ack,
+    //input wire RW_SEL,
+    //input wire ack,
     
-    input wire [7:0] Data_in,
-    input wire [6:0] Device_Addr,
-    output reg [7:0] Data_out,
+    //input wire [6:0] Device_Addr,
+    //input wire [7:0] Data_in,
+    //output reg [7:0] Data_out,
 
-    output wire SCL,
-    inout wire [N-1:0] SDA,
+    output reg SCL,
+    //input wire SDA_in,
+    output reg SDA_out
 );
 
-reg [3:0] state;
+reg [3:0] state=START;
 reg [3:0] next_state;
 
-//input initial
-reg s_bit_reg = 0;
-reg RW_SEL_reg = 0;;
-reg ack_reg = 0;;
 
-reg [7:0] Data_in_reg = 0;
+//input initial
+reg s_bit_reg;
+reg RW_SEL_reg;
+reg ack_reg;
+
+reg SDA_reg;
+reg SCL_reg;
+
+reg [7:0] Data_reg = 0;
 reg [7:0] Device_Addr_reg = 0;
 
 //state define
@@ -48,11 +53,11 @@ always @* begin
             else next_state = IDLE;
 
         START:  
-            next_state = DEV_SEL  
+            next_state = DEV_SEL;  
 
-        DEV_SEL:
-            if() next_state = WRITE;
-            else if() next_state = READ;
+        /*DEV_SEL:
+            if(RW_SEL_reg) next_state = WRITE;
+            else next_state = READ;*/
 
         WRITE:
             next_state = REG_SEL;
@@ -76,7 +81,7 @@ always @* begin
             next_state = IDLE;
 
         default 
-            next_state = STATE_IDLE;
+            next_state = IDLE;
     endcase
 end
 
@@ -85,18 +90,18 @@ always @(posedge clk) begin
 case (state)
     IDLE :
     begin
-        Data_inout_reg  <= 7'd0;
-        Device_Addr_reg <= 7'd0;
-        RW_SEL_reg  <= 1'bx;
-        s_bit_reg = 1'b0;
-        ack_reg = 1'b0
+        //Device_Addr_reg <= Device_Addr;
+        SDA_reg <= 1'b1;
+        SCL_reg <= 1'b1;
     end
 
-    START : 
+    START :
     begin
-        
+        SDA_reg = 1'b0;
+        SDA_out <= SDA_reg;
+        SCL_reg <= clk;
+        SCL <= SCL_reg;   
     end
-
 
 endcase
 end
