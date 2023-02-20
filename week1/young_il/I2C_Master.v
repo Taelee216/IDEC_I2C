@@ -65,25 +65,34 @@ always @ (*) begin
 		end
 
 		STATE_START : 
-		if (count == 8'd29) begin
+		if (count >= 8'd29) begin
 			next_state = STATE_DEV_SEL;
 		end
 		else  begin
 			next_state = STATE_IDLE;
 		end
 
-		STATE_DEV_SEL:
-		 if (count == 8'd22 ) begin
+		STATE_DEV_SEL :
+		if (count == 8'd22 ) begin
 			next_state = STATE_RW;
 		end
+
+		else if ((count == 8'd13)&(RW_sel)) begin
+			next_state = STATE_RW;
+		end
+
 		else begin
 			next_state = STATE_DEV_SEL;
             	end
 		
 		STATE_RW:
-		 if (count == 8'd21) begin
+		if (count == 8'd21) begin
 			next_state = STATE_ACK_W;
 		end
+		else if ((count == 8'd12)&(RW_sel)) begin
+			next_state = STATE_ACK_W;
+		end
+
 		else begin
 			next_state = STATE_IDLE;
             	end
@@ -91,6 +100,9 @@ always @ (*) begin
 		STATE_ACK_W :  				
 		if ((count == 8'd20) & (SDA_in == 0)) begin
 			next_state = STATE_REG_SEL;
+		end
+		else if ((count == 8'd11)&(RW_sel)) begin
+			next_state = STATE_READ;
 		end
 		else begin
 			next_state = STATE_IDLE;
@@ -150,7 +162,7 @@ always @ (*) begin
 		end
 
 		STATE_STOP : 		
-		if (rst) begin
+		if (count == 8'd1) begin
 			next_state = STATE_IDLE;
 		end
 		else begin
@@ -158,7 +170,7 @@ always @ (*) begin
 		end
 		
 		STATE_RESTART :
-		if (8'd20) begin
+		if (count == 8'd10) begin
 			next_state = STATE_DEV_SEL;
 		end
 		else begin
@@ -174,10 +186,8 @@ always @ (posedge clk) begin
 	case (state)  
 		STATE_IDLE : // Initialization
 		begin
-
 			SCL_out <= 1'b1;
 			SDA_out <= 1'b1;
-			
 			bit_count <= 4'd0;
 		end
 		
@@ -202,7 +212,12 @@ always @ (posedge clk) begin
 
 		STATE_RW :	//Write W bit on SDA (From Master to Slave)
 		begin	
-			SDA_out <= 1'b0;
+			if ((RW_sel==1)&(count==8'd12)) begin
+				SDA_out <= 1'b1;
+			end
+			else begin
+				SDA_out <= 1'b0;
+			end
 		end
 
 		STATE_ACK_W :			//Read ARK bit (From Slave to Master)
@@ -251,6 +266,7 @@ always @ (posedge clk) begin
 		STATE_READ : //Read Data [7:0] on SDA (From Slave to Master)
 		begin
 			SDA_out <= 1'b0;
+			bit_count <= bit_count - 4'd1;
 		end
 
 		STATE_ACK_DATA : 	//Read ARK bit (From Slave to Master)
@@ -270,7 +286,6 @@ always @ (posedge clk) begin
 		
 		STATE_RESTART : 
 		begin
-			count <= count + 8'd10;
 			SDA_out <= 1'b0;
 			bit_count <= 4'd7;
 		end
@@ -288,6 +303,9 @@ always @ (posedge clk) begin
 	else begin
 		if(count > 8'd0) begin
 			count <= count - 8'd1;
+			if((state == STATE_RESTART)) begin
+				count <= count + 8'd9;
+			end
 		end
 		else begin
 			count <= 8'd31;
