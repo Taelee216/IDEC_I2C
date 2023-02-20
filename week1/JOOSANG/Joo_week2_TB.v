@@ -21,8 +21,9 @@ module I2C_Masert_tb;
 
 reg clk, nrst, s_bit;
 wire SCL, SDA_out;
+wire [3:0] state;
 
-I2C_Master u0(.clk(clk), .nrst(nrst), .s_bit(s_bit), .SCL(SCL), .SDA_out(SDA_out));
+I2C_Master u0(.clk(clk), .nrst(nrst), .s_bit(s_bit), .SCL(SCL), .SDA_out(SDA_out), .state(state));
 
 initial begin
     clk = 1'b0;
@@ -33,7 +34,7 @@ initial begin
     nrst = 1'b0;
     #2
     nrst = 1'b1;
-    #100
+    #500
     nrst = 1'b0;
 end
 
