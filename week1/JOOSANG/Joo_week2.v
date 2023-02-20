@@ -11,20 +11,19 @@
 
     output reg SCL,
     //input wire SDA_in,
-    output reg SDA_out
+    output reg SDA_out,
+    output reg [3:0] state    
 );
-
-reg [3:0] state=START;
-reg [3:0] next_state;
 
 
 //input initial
-reg s_bit_reg;
 reg RW_SEL_reg;
 reg ack_reg;
 
 reg SDA_reg;
 reg SCL_reg;
+
+reg clr=0;
 
 reg [7:0] Data_reg = 0;
 reg [7:0] Device_Addr_reg = 0;
@@ -41,19 +40,27 @@ parameter DATA    = 4'd7;
 parameter NACK    = 4'd8;
 parameter STOP    = 4'd9;
 
+
+reg [3:0] next_state = IDLE;
+
 always @(posedge clk, negedge nrst)
-    if(~nrst) state <= IDLE;
+    if(!nrst) state <= IDLE;
     else state <= next_state;
 
 //state machine    
 always @* begin
     case (state)
         IDLE:  
-            if(s_bit_reg) next_state = START;
+            if(s_bit) next_state = START;
             else next_state = IDLE;
 
         START:  
             next_state = DEV_SEL;  
+
+        DEV_SEL :
+		if (count == 8'd22 ) next_state = READ;		
+		else next_state = DEV_SEL;
+			
 
         /*DEV_SEL:
             if(RW_SEL_reg) next_state = WRITE;
@@ -86,23 +93,60 @@ always @* begin
 end
 
 
+
 always @(posedge clk) begin
 case (state)
     IDLE :
     begin
         //Device_Addr_reg <= Device_Addr;
-        SDA_reg <= 1'b1;
-        SCL_reg <= 1'b1;
+        SDA_out <= 1'b1;
+        SCL <= 1'b1;
     end
 
     START :
     begin
-        SDA_reg = 1'b0;
-        SDA_out <= SDA_reg;
-        SCL_reg <= clk;
-        SCL <= SCL_reg;   
+        SDA_out <= 1'b0;   
     end
 
 endcase
 end
+
+
+
+
+//precale
+reg [1:0] counter = 0;
+
+always @(posedge clk) begin
+
+    if(counter==3) begin
+        clr <= ~clr;
+        count <= 0;
+        end
+    else counter <= counter+1;
+       
+end
+
+always @(posedge clk) begin
+    if(state==IDLE) SCL <= 1'b1;
+    else SCL <= clr;
+end
+
+
+
+////////state임시로 count로 계산//////////
+reg [7:0] count;
+
+always @ (posedge clk) begin			
+	if(!nrst) begin	// rst Active
+		count <= 8'd31;
+	end
+	
+	else begin
+		if(count > 8'd0) count <= count - 8'd1;			
+		else count <= 8'd31;					
+	end
+end
+////////////////////////////////////////////////
+
 endmodule
