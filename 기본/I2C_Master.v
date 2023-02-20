@@ -34,12 +34,14 @@ reg [3:0]  state = STATE_IDLE;
 reg [3:0]  next_state = STATE_IDLE;
 
 reg [3:0]  bit_count = 4'd0;
+reg [3:0]  SCL_count = 4'd0;
 
 wire	   SDA;
 wire	   SCL;
 
 
-reg [7:0] count;
+reg [8:0] count;
+reg [7:0] count1;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,7 +67,7 @@ always @ (*) begin
 		end
 
 		STATE_START : 
-		if (count >= 8'd29) begin
+		if (rst) begin
 			next_state = STATE_DEV_SEL;
 		end
 		else  begin
@@ -73,11 +75,11 @@ always @ (*) begin
 		end
 
 		STATE_DEV_SEL :
-		if (count == 8'd22 ) begin
+		if (rst) begin
 			next_state = STATE_RW;
 		end
 
-		else if ((count == 8'd13)&(RW_sel)) begin
+		else if (rst&(RW_sel)) begin
 			next_state = STATE_RW;
 		end
 
@@ -86,10 +88,10 @@ always @ (*) begin
             	end
 		
 		STATE_RW:
-		if (count == 8'd21) begin
+		if (rst) begin
 			next_state = STATE_ACK_W;
 		end
-		else if ((count == 8'd12)&(RW_sel)) begin
+		else if (rst&(RW_sel)) begin
 			next_state = STATE_ACK_W;
 		end
 
@@ -98,10 +100,10 @@ always @ (*) begin
             	end
 
 		STATE_ACK_W :  				
-		if ((count == 8'd20) & (SDA_in == 0)) begin
+		if (rst & (SDA_in == 0)) begin
 			next_state = STATE_REG_SEL;
 		end
-		else if ((count == 8'd11)&(RW_sel)) begin
+		else if (rst&(RW_sel)) begin
 			next_state = STATE_READ;
 		end
 		else begin
@@ -109,7 +111,7 @@ always @ (*) begin
 		end
 
 		STATE_REG_SEL : 				
-		if (count == 8'd12) begin
+		if (rst) begin
 			next_state = STATE_ACK_REG;
 		end
 		else begin
@@ -117,7 +119,7 @@ always @ (*) begin
 		end
 		
 		STATE_ACK_REG : 				
-		if ((count == 8'd11) & (SDA_in == 0)) begin
+		if (rst & (SDA_in == 0)) begin
 			if(RW_sel) begin
 				next_state = STATE_RESTART;
 			end
@@ -130,7 +132,7 @@ always @ (*) begin
 		end
 		
 		STATE_READ :  				
-		if (count == 8'd3) begin
+		if (rst) begin
 			next_state = STATE_NACK;
 		end
 		else begin
@@ -138,7 +140,7 @@ always @ (*) begin
 		end
 		
 		STATE_WRITE : 				
-		if (count == 8'd3) begin
+		if (rst) begin
 			next_state = STATE_ACK_DATA;
 		end
 		else begin
@@ -146,7 +148,7 @@ always @ (*) begin
 		end
 
 		STATE_ACK_DATA : 				
-		if (count == 8'd2) begin
+		if (rst) begin
 			next_state = STATE_STOP;
 		end
 		else begin
@@ -154,7 +156,7 @@ always @ (*) begin
 		end
 		
 		STATE_NACK : 				
-		if (count == 8'd2) begin
+		if (rst) begin
 			next_state = STATE_STOP;
 		end
 		else begin
@@ -162,7 +164,7 @@ always @ (*) begin
 		end
 
 		STATE_STOP : 		
-		if (count == 8'd1) begin
+		if (rst) begin
 			next_state = STATE_IDLE;
 		end
 		else begin
@@ -170,7 +172,7 @@ always @ (*) begin
 		end
 		
 		STATE_RESTART :
-		if (count == 8'd10) begin
+		if (rst) begin
 			next_state = STATE_DEV_SEL;
 		end
 		else begin
@@ -189,6 +191,9 @@ always @ (posedge clk) begin
 			SCL_out <= 1'b1;
 			SDA_out <= 1'b1;
 			bit_count <= 4'd0;
+			SCL_count <= 4'd0;
+			count1<= 8'd0;
+			count<= 0;
 		end
 		
 		STATE_START : // Write Start bit(0) on SDA (From Master to Slave)
@@ -296,30 +301,32 @@ end
 ////////////////////////////////////////////////////////////////////////////////////
 
 always @ (posedge clk) begin			
-	if(!rst) begin	// rst Active
-		count <= 8'd31;
+	if(!rst) begin
+		count <= 8'd0;
 	end
 	
 	else begin
-		if(count > 8'd0) begin
-			count <= count - 8'd1;
-			if((state == STATE_RESTART)) begin
-				count <= count + 8'd9;
-			end
-		end
-		else begin
-			count <= 8'd31;
-		end
+		count <= count + 8'd1;
+
 	end
 end
 
 ////////////////////////////////////////////////////////////////////////////////////
 always @ (posedge clk) begin
-	if ( state > STATE_START ) begin
-		SCL_out <= SCL_out^1'b1;
+	if ( state >= STATE_START ) begin
+		SCL_count <= SCL_count + 4'd1;
+		if (SCL_count == 3) begin
+       			 SCL_count <= 4'd0;
+       			 SCL_out <= !SCL_out;
+    		end
 	end
-	else begin
-		SCL_out <= 1'b1;
+end
+////////////////////////////////////////////////////////////////////////////////////
+always @ (posedge clk) begin
+	count1 <= count1 + 8'd1;
+	if ( count1 == 7) begin
+	count1 <= 8'd0;
+	bit_count <= bit_count + 4'd1;
 	end
 end
 
