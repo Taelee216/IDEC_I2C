@@ -29,6 +29,8 @@ localparam STATE_RESTART			= 4'd10;
 localparam STATE_NACK		 		= 4'd11;
 
 localparam STATE_STOP				= 4'd12;
+localparam STATE_FINISH				= 4'd13;
+
 
 
 
@@ -61,7 +63,7 @@ end
 always @ (*) begin
 	case (state)
 		STATE_IDLE : 				
-		if (count == 9'd3) begin
+		if (count == 9'd5) begin
 			next_state = STATE_START;
 		end
 		else begin
@@ -69,10 +71,10 @@ always @ (*) begin
 		end
 
 		STATE_START : 
-		if (count == 9'd6) begin
+		if (count == 9'd10) begin
 			next_state = STATE_DEV_SEL;
 		end
-		else if (count <= 9'd5)begin
+		else if (count <= 9'd9)begin
 			next_state = STATE_START;
 		end
 		else  begin
@@ -80,7 +82,7 @@ always @ (*) begin
 		end
 
 		STATE_DEV_SEL :
-		if (count == 9'd62) begin
+		if (count == 9'd66) begin
 			next_state = STATE_RW;
 		end
 
@@ -89,7 +91,7 @@ always @ (*) begin
 		end
 		
 		STATE_RW:
-		if (count == 9'd70 ) begin
+		if (count == 9'd74 ) begin
 			next_state = STATE_ACK_W;
 		end
 
@@ -98,10 +100,10 @@ always @ (*) begin
             	end
 
 		STATE_ACK_W :  				
-		if (count == 9'd78 & (SDA_in == 1'b0)) begin
+		if (count == 9'd82 & (SDA_in == 1'b0)) begin
 			next_state = STATE_REG_SEL;
 		end
-		else if ((count <= 9'd77) & (SDA_in == 1'b0)) begin
+		else if ((count <= 9'd81) & (SDA_in == 1'b0)) begin
 			next_state = STATE_ACK_W;
 		end
 
@@ -110,7 +112,7 @@ always @ (*) begin
 		end
 
 		STATE_REG_SEL : 				
-		if (count == 9'd142 ) begin
+		if (count == 9'd146 ) begin
 			next_state = STATE_ACK_REG;
 		end
 		else begin
@@ -118,7 +120,7 @@ always @ (*) begin
 		end
 		
 		STATE_ACK_REG : 				
-		if (count == 9'd150 & (SDA_in == 1'b0)) begin
+		if (count == 9'd154 & (SDA_in == 1'b0)) begin
 			if(RW_sel) begin
 				next_state = STATE_RESTART;
 			end
@@ -128,7 +130,7 @@ always @ (*) begin
 			end
 		end
 
-		else if((count<= 9'd149) & (SDA_in == 1'b0)) begin
+		else if((count<= 9'd153) & (SDA_in == 1'b0)) begin
 			next_state = STATE_ACK_REG;
 		end
 
@@ -145,7 +147,7 @@ always @ (*) begin
 		end
 		
 		STATE_WRITE : 				
-		if (count == 9'd214 ) begin
+		if (count == 9'd218 ) begin
 			next_state = STATE_ACK_DATA;
 		end
 		else begin
@@ -153,10 +155,10 @@ always @ (*) begin
 		end
 
 		STATE_ACK_DATA : 				
-		if ((count == 9'd222) & (SDA_in == 1'b0)) begin
+		if ((count == 9'd226) & (SDA_in == 1'b0)) begin
 			next_state = STATE_STOP;
 		end
-		else if ((count <= 9'd221) & (SDA_in == 1'b0)) begin
+		else if ((count <= 9'd225) & (SDA_in == 1'b0)) begin
 			next_state = STATE_ACK_DATA;
 		end
 		else begin
@@ -172,14 +174,14 @@ always @ (*) begin
 		end
 
 		STATE_STOP : 		
-		if ((count == 9'd230) & (RW_sel == 1'b0)) begin
-			next_state = STATE_IDLE;
+		if ((count == 9'd234) & (RW_sel == 1'b0)) begin
+			next_state = STATE_FINISH;
 		end
-		else if (count <= 9'd229) begin
+		else if (count <= 9'd233) begin
 			next_state = STATE_STOP;
 		end
 		else begin
-			next_state = STATE_IDLE;
+			next_state = STATE_STOP;
 		end
 		
 		STATE_RESTART :
@@ -188,6 +190,14 @@ always @ (*) begin
 		end
 		else begin
 			next_state = STATE_IDLE;
+		end
+
+		STATE_FINISH :
+		if (count == 242) begin
+			next_state = STATE_IDLE;
+		end
+		else begin
+			next_state = STATE_FINISH;
 		end
 
 		default next_state = STATE_IDLE;
@@ -210,7 +220,7 @@ always @ (posedge clk) begin
 		STATE_START : //Write Start bit(0) on SDA (From Master to Slave)
 		begin
 			
-			if(count ==6) begin
+			if(count == 9'd10) begin
 				bit_count <= 4'd7;
 				SDA_out <= 1'b0;
 			end
@@ -239,7 +249,7 @@ always @ (posedge clk) begin
 
 		STATE_ACK_W :			//Read ARK bit (From Slave to Master)
 		begin	
-			if(count == 9'd78) begin
+			if(count == 9'd82) begin
 				SDA_out <= 1'b0;
 				bit_count <= 4'd8;
 			end
@@ -262,7 +272,7 @@ always @ (posedge clk) begin
 
 		STATE_ACK_REG :			//Read ARK bit (From Slave to Master)
 		begin	
-			if(count == 9'd150 ) begin
+			if(count == 9'd154 ) begin
 				SDA_out <= 1'b0;
 				bit_count <= 4'd8;
 			end
@@ -302,11 +312,13 @@ always @ (posedge clk) begin
 
 		STATE_STOP : //Write STOP bit on SDA (From Master to Slave)
 		begin
-			if(SCL_out == 1'b1) begin
+			SDA_out <= 1'b1;
+		end
+		
+		STATE_FINISH : //Write RESTART bit on SDA (From Master to Slave)
+		begin
+			if(SCL_out == 1'b1)begin
 				SDA_out <= 1'b1;
-			end
-			else begin
-				SDA_out <= 1'b0;
 			end
 		end
 		
@@ -327,10 +339,10 @@ always @ (posedge clk) begin					     	// count is clk based count     	   //
 	end							        // # a Period of count = 2 period of clk # //
 									// ####################################### //
 	else begin							/////////////////////////////////////////////
-		if((count == 9'd230) & (RW_sel == 1'b0)) begin							   //
+		if((count == 9'd242) & (RW_sel == 1'b0)) begin							   //
 			count <= 9'd0;										   //
 		end												   //
-		else if((count == 9'd318) & (RW_sel == 1'b1)) begin						   //
+		else if((count == 9'd320) & (RW_sel == 1'b1)) begin						   //
 			count <= 9'd0;										   //
 		end												   //
 		else begin											   //
@@ -346,18 +358,18 @@ always @ (posedge clk) begin
 		SCL_count <= SCL_count + 4'd1;
 		if (SCL_count == 3) begin
        			 SCL_count <= 4'd0;
-       			 SCL_out <= !SCL_out;				//hi//
+       			 SCL_out <= !SCL_out;
     		end
 	end
-	else if (state > STATE_NACK) begin
-		SCL_count <= 4'd0;
-	end
-	else begin
-		SCL_count <= 4'd0;
-	end
-	
-end
-								    /////////////////////////////////////////////////
+	else if (state == STATE_FINISH) begin
+		SCL_count <= 4'd1;										   //
+	end													   //
+	else begin												   //
+		SCL_count <= 4'd0;										   //
+	end													   //
+														   //
+end														   //
+								   						   //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 								   // count1 :					   //
 always @ (posedge clk) begin					   // count1 is clk based count for bit_count      //
