@@ -1,0 +1,7 @@
+# Reading C:/intelFPGA_lite/18.1/modelsim_ase/tcl/vsim/pref.tcl
+# error: Layout::Clairvoyance can't read "map(È)": no such element in array
+# can't read "map(È)": no such element in array
+#     while executing
+# "Layout::Clairvoyance"
+# OpenFile {C:/Users/user/Desktop/È ôT/IDEC_I2C/0ø/I2C_Master.v}
+quit
