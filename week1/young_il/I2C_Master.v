@@ -346,7 +346,7 @@ always @ (posedge clk) begin
 		SCL_count <= SCL_count + 4'd1;
 		if (SCL_count == 3) begin
        			 SCL_count <= 4'd0;
-       			 SCL_out <= !SCL_out;
+       			 SCL_out <= !SCL_out;				//hi//
     		end
 	end
 	else if (state > STATE_NACK) begin
