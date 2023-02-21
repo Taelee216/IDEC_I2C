@@ -1,5 +1,5 @@
 $date
-	Sun Feb 19 19:09:23 2023
+	Mon Feb 20 20:27:16 2023
 $end
 $version
 	Icarus Verilog
@@ -8,269 +8,421 @@ $timescale
 	1s
 $end
 $scope module I2C_Masert_tb $end
-$var wire 1 ! SDA_out $end
-$var wire 1 " SCL $end
-$var reg 1 # clk $end
-$var reg 1 $ nrst $end
-$var reg 1 % s_bit $end
+$var wire 4 ! state [3:0] $end
+$var wire 1 " SDA_out $end
+$var wire 1 # SCL $end
+$var reg 1 $ clk $end
+$var reg 1 % nrst $end
+$var reg 1 & s_bit $end
 $scope module u0 $end
-$var wire 1 # clk $end
-$var wire 1 $ nrst $end
-$var wire 1 % s_bit $end
-$var parameter 4 & ACK $end
-$var parameter 4 ' DATA $end
-$var parameter 4 ( DEV_SEL $end
-$var parameter 4 ) IDLE $end
-$var parameter 4 * NACK $end
-$var parameter 4 + READ $end
-$var parameter 4 , REG_SEL $end
-$var parameter 4 - START $end
-$var parameter 4 . STOP $end
-$var parameter 4 / WRITE $end
-$var reg 8 0 Data_reg [7:0] $end
-$var reg 8 1 Device_Addr_reg [7:0] $end
-$var reg 1 " SCL $end
-$var reg 1 2 SCL_reg $end
-$var reg 1 ! SDA_out $end
-$var reg 1 3 SDA_reg $end
-$var reg 4 4 next_state [3:0] $end
-$var reg 1 5 s_bit_reg $end
-$var reg 4 6 state [3:0] $end
+$var wire 1 $ clk $end
+$var wire 1 % nrst $end
+$var wire 1 & s_bit $end
+$var parameter 4 ' ACK $end
+$var parameter 4 ( DATA $end
+$var parameter 4 ) DEV_SEL $end
+$var parameter 4 * IDLE $end
+$var parameter 4 + NACK $end
+$var parameter 4 , READ $end
+$var parameter 4 - REG_SEL $end
+$var parameter 4 . START $end
+$var parameter 4 / STOP $end
+$var parameter 4 0 WRITE $end
+$var reg 8 1 Data_reg [7:0] $end
+$var reg 8 2 Device_Addr_reg [7:0] $end
+$var reg 1 # SCL $end
+$var reg 1 " SDA_out $end
+$var reg 1 3 clr $end
+$var reg 8 4 count [7:0] $end
+$var reg 2 5 counter [1:0] $end
+$var reg 4 6 next_state [3:0] $end
+$var reg 4 7 state [3:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
 $comment Show the parameter values. $end
 $dumpall
-b100 /
-b1001 .
-b1 -
-b110 ,
-b11 +
-b1000 *
-b0 )
-b10 (
-b111 '
-b101 &
+b100 0
+b1001 /
+b1 .
+b110 -
+b11 ,
+b1000 +
+b0 *
+b10 )
+b111 (
+b101 '
 $end
 #0
 $dumpvars
+b0 7
 b0 6
-x5
-b0 4
-x3
-x2
+b0 5
+bx 4
+03
+b0 2
 b0 1
-b0 0
+0&
 0%
 0$
-0#
+x#
 x"
-x!
+b0 !
 $end
 #2
-1$
-#5
-12
-13
-1#
-#10
-0#
-#15
-1#
-#20
-0#
-#25
-1#
-#30
-0#
 1%
+#5
+1"
+b1 5
+1#
+b11111 4
+1$
+#10
+0$
+#15
+b11110 4
+b10 5
+1$
+#20
+0$
+#25
+b11 5
+b11101 4
+1$
+#30
+b1 6
+0$
+1&
 #35
-1#
+b11100 4
+13
+b1 !
+b1 7
+1$
 #40
-0#
+0$
 #45
-1#
+0"
+03
+b0 4
+1$
 #50
-0#
+0$
 #55
-1#
+b10 6
+b11111 4
+0#
+13
+1$
 #60
-0#
+0$
 #65
+03
 1#
+b0 4
+b10 !
+b10 7
+1$
 #70
-0#
+0$
 #75
-1#
+b11111 4
+0#
+13
+1$
 #80
-0#
+0$
 #85
+03
 1#
+b0 4
+1$
 #90
-0#
+0$
 #95
-1#
-#100
+b11111 4
 0#
-#102
+13
+1$
+#100
 0$
 #105
+03
 1#
+b0 4
+1$
 #110
-0#
+0$
 #115
-1#
+b11111 4
+0#
+13
+1$
 #120
-0#
+0$
 #125
+03
 1#
+b0 4
+1$
 #130
-0#
+0$
 #135
-1#
+b11111 4
+0#
+13
+1$
 #140
-0#
+0$
 #145
+03
 1#
+b0 4
+1$
 #150
-0#
+0$
 #155
-1#
+b11111 4
+0#
+13
+1$
 #160
-0#
+0$
 #165
+03
 1#
+b0 4
+1$
 #170
-0#
+0$
 #175
-1#
+b11111 4
+0#
+13
+1$
 #180
-0#
+0$
 #185
+03
 1#
+b0 4
+1$
 #190
-0#
+0$
 #195
-1#
+b11111 4
+0#
+13
+1$
 #200
-0#
+0$
 #205
+03
 1#
+b0 4
+1$
 #210
-0#
+0$
 #215
-1#
+b11111 4
+0#
+13
+1$
 #220
-0#
+0$
 #225
+03
 1#
+b0 4
+1$
 #230
-0#
+0$
 #235
-1#
+b11111 4
+0#
+13
+1$
 #240
-0#
+0$
 #245
+03
 1#
+b0 4
+1$
 #250
-0#
+0$
 #255
-1#
+b11111 4
+0#
+13
+1$
 #260
-0#
+0$
 #265
+03
 1#
+b0 4
+1$
 #270
-0#
+0$
 #275
-1#
+b11111 4
+0#
+13
+1$
 #280
-0#
+0$
 #285
+03
 1#
+b0 4
+1$
 #290
-0#
+0$
 #295
-1#
+b11111 4
+0#
+13
+1$
 #300
-0#
+0$
 #305
+03
 1#
+b0 4
+1$
 #310
-0#
+0$
 #315
-1#
+b11111 4
+0#
+13
+1$
 #320
-0#
+0$
 #325
+03
 1#
+b0 4
+1$
 #330
-0#
+0$
 #335
-1#
+b11111 4
+0#
+13
+1$
 #340
-0#
+0$
 #345
+03
 1#
+b0 4
+1$
 #350
-0#
+0$
 #355
-1#
+b11111 4
+0#
+13
+1$
 #360
-0#
+0$
 #365
+03
 1#
+b0 4
+1$
 #370
-0#
+0$
 #375
-1#
+b11111 4
+0#
+13
+1$
 #380
-0#
+0$
 #385
+03
 1#
+b0 4
+1$
 #390
-0#
+0$
 #395
-1#
+b11111 4
+0#
+13
+1$
 #400
-0#
+0$
 #405
+03
 1#
+b0 4
+1$
 #410
-0#
+0$
 #415
-1#
+b11111 4
+0#
+13
+1$
 #420
-0#
+0$
 #425
+03
 1#
+b0 4
+1$
 #430
-0#
+0$
 #435
-1#
+b11111 4
+0#
+13
+1$
 #440
-0#
+0$
 #445
+03
 1#
+b0 4
+1$
 #450
-0#
+0$
 #455
-1#
+b11111 4
+0#
+13
+1$
 #460
-0#
+0$
 #465
+03
 1#
+b0 4
+1$
 #470
-0#
+0$
 #475
-1#
+b11111 4
+0#
+13
+1$
 #480
-0#
+0$
 #485
+03
 1#
+b0 4
+1$
 #490
-0#
+0$
 #495
-1#
-#500
+b11111 4
 0#
+13
+1$
+#500
+0$
