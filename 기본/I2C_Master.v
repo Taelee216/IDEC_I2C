@@ -400,11 +400,13 @@ always @ (posedge clk) begin						 				// SCL_count is clk based count for SCL_o
 	end																// I2C Protocol End Condition is -        	   //
 	else if (state == STATE_FINISH) begin							// SCL rises, followed by SDA rising    	   //
 		SCL_out <= 1'd0;											// SCL_out :           					       //
-		SCL_count <= 4'd0;											// SCL_out is SCL_count based clk      	       //
-					   			 									// ########################################### //
-	end																// ## a Period of SCL_out = 8 period of clk ## //
-								 								    // ########################################### //
-	else if ( STATE_START <= state ) begin			 				/////////////////////////////////////////////////
+		SCL_count <= SCL_count + 4'd1;								// SCL_out is SCL_count based clk      	       //
+		if(SCL_count >= 4'd3) begin									// ########################################### //
+			SCL_cout <= 1'b1;										// ## a Period of SCL_out = 8 period of clk ## //
+		end															// ########################################### //
+	end																/////////////////////////////////////////////////
+								 								    											   //
+	else if ( STATE_START <= state ) begin			 															   //
 		if (SCL_count == 3) begin													   							   //
        			SCL_count <= 4'd0;													     						   //
        			SCL_out <= !SCL_out;													   						   //
