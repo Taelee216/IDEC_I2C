@@ -6,8 +6,8 @@ input	wire [6:0] _Dev_addr,
 input	wire	   clk,rst,_RW_sel,
 
 input	wire	 SDA_in,
-output	reg	 SDA_out,
-output	reg	 SCL_out
+output	reg	 	 SDA_out,
+output	reg	 	 SCL_out
 
 );
 
@@ -15,7 +15,7 @@ output	reg	 SCL_out
 localparam STATE_IDLE 				= 4'd0;
 localparam STATE_START 				= 4'd1;
 localparam STATE_DEV_SEL 			= 4'd2;
-localparam STATE_RW				= 4'd3;
+localparam STATE_RW					= 4'd3;
 localparam STATE_ACK_RW			 	= 4'd4;
 
 localparam STATE_REG_SEL	 		= 4'd5;

@@ -3,7 +3,7 @@ module I2C_Master_TB;
 reg [7:0] _Data_in;
 reg [7:0] _Reg_addr;
 reg [6:0] _Dev_addr;
-reg	   clk,rst,_RW_sel;
+reg	   	  clk,rst,_RW_sel;
 
 reg	 SDA_in;
 wire	 SDA_out;
@@ -15,7 +15,7 @@ initial begin
 	clk = 1'b0;
 	forever #1 clk = ~clk;
 end
-
+								//__________able to change__________//
 initial begin
 rst = 1'b0;
 #9
