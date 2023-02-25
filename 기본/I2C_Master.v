@@ -1,13 +1,13 @@
 module I2C_Master (
 
-input	wire [7:0] Data_in,
-input	wire [7:0] Reg_addr,
-input	wire [6:0] Dev_addr,
-input	wire	   clk,rst,RW_sel,
+input	wire [7:0] _Data_in,
+input	wire [7:0] _Reg_addr,
+input	wire [6:0] _Dev_addr,
+input	wire	   clk,rst,_RW_sel,
 
-input	wire		SDA_in,
-output	reg	 		SDA_out,
-output	reg	 		SCL_out
+input	wire	 SDA_in,
+output	reg	 SDA_out,
+output	reg	 SCL_out
 
 );
 
@@ -15,7 +15,7 @@ output	reg	 		SCL_out
 localparam STATE_IDLE 				= 4'd0;
 localparam STATE_START 				= 4'd1;
 localparam STATE_DEV_SEL 			= 4'd2;
-localparam STATE_RW					= 4'd3;
+localparam STATE_RW				= 4'd3;
 localparam STATE_ACK_RW			 	= 4'd4;
 
 localparam STATE_REG_SEL	 		= 4'd5;
@@ -31,10 +31,13 @@ localparam STATE_NACK		 		= 4'd11;
 localparam STATE_STOP				= 4'd12;
 localparam STATE_FINISH				= 4'd13;
 
+reg [7:0]  Data_in  = 8'd0;
+reg [7:0]  Reg_addr = 8'd0;
+reg [6:0]  Dev_addr = 7'd0;
+reg 	   RW_sel   = 1'd0;
 
 
-
-reg [3:0]  state 	  = STATE_IDLE;
+reg [3:0]  state = STATE_IDLE;
 reg [3:0]  next_state = STATE_IDLE;
 
 reg [3:0]  bit_count = 4'd0;
@@ -44,7 +47,7 @@ wire	   SDA;
 wire	   SCL;
 
 
-reg [8:0] count	 = 9'd0;
+reg [8:0] count	= 9'd0;
 reg [3:0] count1 = 4'd0;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,10 +189,10 @@ always @ (*) begin
 
 		STATE_STOP : 		
 		if ((count == 9'd234) & (RW_sel == 1'b0)) begin
-			next_state = STATE_FINISH;
+			next_state = STATE_IDLE;
 		end
 		else if ((count == 9'd314) & (RW_sel == 1'b1)) begin
-			next_state = STATE_FINISH;
+			next_state = STATE_IDLE;
 		end
 		else begin
 			next_state = STATE_STOP;
@@ -203,17 +206,6 @@ always @ (*) begin
 			next_state = STATE_RESTART;
 		end
 
-		STATE_FINISH :
-		if (count == 9'd242) begin
-			next_state = STATE_IDLE;
-		end
-		else if(count == 9'd322) begin
-			next_state = STATE_IDLE;
-		end
-		else begin
-			next_state = STATE_FINISH;
-		end
-
 		default next_state = STATE_IDLE;
 	endcase
 end
@@ -223,12 +215,24 @@ always @ (posedge clk) begin
 	case (state)  
 		STATE_IDLE : //Initialization
 		begin
-			SCL_out <= 1'b1;
-			SDA_out <= 1'b1;
+
+			Data_in <= _Data_in;
+			Reg_addr <= _Reg_addr;
+			Dev_addr <= _Dev_addr;
+			RW_sel <= _RW_sel;
+
 			bit_count <= 4'd0;
 			SCL_count <= 4'd0;
 			count1 <= 4'd0;
 			count <= 9'd0;
+
+			if(SCL_out == 1'b1)begin
+				SDA_out <= 1'b1;
+			end
+			else begin
+				SDA_out <= 1'b0;
+			end
+
 		end
 		
 		STATE_START : //Write Start bit(0) on SDA (From Master to Slave)
@@ -347,16 +351,6 @@ always @ (posedge clk) begin
 			SDA_out <= 1'b1;
 		end
 		
-		STATE_FINISH : //Write RESTART bit on SDA (From Master to Slave)
-		begin
-			if(SCL_out == 1'b1)begin
-				SDA_out <= 1'b1;
-			end
-			else begin
-				SDA_out <= 1'b0;
-			end
-		end
-		
 		STATE_RESTART : //Write RESTART bit on SDA (From Master to Slave)
 		begin
 			if(count == 9'd162) begin
@@ -398,23 +392,16 @@ always @ (posedge clk) begin						 				// SCL_count is clk based count for SCL_o
 		SCL_out <= 1'd0;											// I2C Protocol Start Condition is -   		   //
 		SCL_count <= 4'd0;											// SDA being pulled low while SCL stays high   //
 	end																// I2C Protocol End Condition is -        	   //
-	else if (state == STATE_FINISH) begin							// SCL rises, followed by SDA rising    	   //
-		SCL_out <= 1'd0;											// SCL_out :           					       //
-		SCL_count <= SCL_count + 4'd1;								// SCL_out is SCL_count based clk      	       //
-		if(SCL_count >= 4'd3) begin									// ########################################### //
-			SCL_cout <= 1'b1;										// ## a Period of SCL_out = 8 period of clk ## //
-		end															// ########################################### //
-	end																/////////////////////////////////////////////////
-								 								    											   //
-	else if ( STATE_START <= state ) begin			 															   //
-		if (SCL_count == 3) begin													   							   //
-       			SCL_count <= 4'd0;													     						   //
-       			SCL_out <= !SCL_out;													   						   //
-    		end													   												   //
-		else begin													   											   //
-			SCL_count <= SCL_count + 4'd1;													   					   //
-		end													   													   //
-	end													   													       //
+	else if ( STATE_START <= state ) begin							// SCL rises, followed by SDA rising    	   //
+		if (SCL_count == 3) begin									// SCL_out :           					       //
+			SCL_count <= 4'd0;										// SCL_out is SCL_count based clk      	       //
+			SCL_out <= !SCL_out;									// ########################################### //
+		end															// ## a Period of SCL_out = 8 period of clk ## //
+																	// ########################################### //
+		else begin													/////////////////////////////////////////////////
+			SCL_count <= SCL_count + 4'd1;																		   //
+		end			 																							   //
+	end																				   							   //
 													  	 													       //
 	else begin												   													   //
 		SCL_count <= 4'd0;													   									   //
