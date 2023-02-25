@@ -5,7 +5,7 @@ reg [7:0] _Reg_addr;
 reg [6:0] _Dev_addr;
 reg	   	  clk,rst,_RW_sel;
 
-reg	 SDA_in;
+reg	 	 SDA_in;
 wire	 SDA_out;
 wire	 SCL_out;
 
