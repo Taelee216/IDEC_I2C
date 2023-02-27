@@ -154,7 +154,7 @@ always @ (SCL) begin
 		begin
 			Dev_addr [bit_count - 1'b1] <= SDA_out;
 
-			if( ( (e_count == 8'dx) | (e_count == 8'd6) ) & (bit_count == 4'd1) & (Dev_addr == 7'b1111111) ) begin
+			if( ( (e_count >= 8'dx) | (e_count >= 8'd6) ) & (bit_count == 4'd1) & (Dev_addr == 7'b1111111) ) begin
 				Enable <= 1'b1;
 				SDA_in <= 1'b0;
 			end
@@ -186,7 +186,7 @@ always @ (SCL) begin
 		begin
 			Reg_addr [bit_count - 4'd1] <= SDA_out;
 
-			if( (e_count == 8'd16) & (bit_count == 4'd1) ) begin
+			if( (e_count >= 8'd16) & (bit_count == 4'd1) ) begin
 				SDA_in <= 1'b0;
 			end
 			else begin
@@ -207,7 +207,7 @@ always @ (SCL) begin
 		begin
 			Data [bit_count - 4'd1] <= SDA_out;
 
-			if( (e_count == 8'd25) & (bit_count == 4'd1) ) begin
+			if( (e_count >= 8'd25) & (bit_count == 4'd1) ) begin
 				SDA_in <= 1'b0;
 			end
 			else begin
