@@ -377,12 +377,17 @@ always @ (posedge clk) begin					     					// count is clk based count     		   
 	end							        								// # a Period of count = 2 period of clk # //
 																		// ####################################### //
 	else begin															/////////////////////////////////////////////
-		if( (state == STATE_STOP) & (SCL_out & SDA_out)) begin							   						   //
-			count <= 9'd0;										   												   //
-		end												   														   //
+		if(SDA_in == 1'b1) begin																				   //
+			count <= 9'd0;																						   //
+		end																										   //
+		else begin																								   //
+			if( (state == STATE_STOP) & (SCL_out & SDA_out)) begin							   					   //
+				count <= 9'd0;										   											   //
+			end												   													   //
 										  														  				   //
-		else begin											   													   //
-			count <= count + 8'd1;									   											   //
+			else begin											   												   //
+				count <= count + 8'd1;									   										   //
+			end																									   //
 		end									  			   														   //
 	end													   														   //
 end														   														   //
