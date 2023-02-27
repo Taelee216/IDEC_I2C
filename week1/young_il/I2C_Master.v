@@ -6,8 +6,8 @@ input	wire [6:0] _Dev_addr,
 input	wire	   clk,rst,_RW_sel,
 
 input	wire	 SDA_in,
-output	reg	 SDA_out,
-output	reg	 SCL_out
+output	reg	 	 SDA_out,
+output	reg	 	 SCL_out
 
 );
 
@@ -15,7 +15,7 @@ output	reg	 SCL_out
 localparam STATE_IDLE 				= 4'd0;
 localparam STATE_START 				= 4'd1;
 localparam STATE_DEV_SEL 			= 4'd2;
-localparam STATE_RW				= 4'd3;
+localparam STATE_RW					= 4'd3;
 localparam STATE_ACK_RW			 	= 4'd4;
 
 localparam STATE_REG_SEL	 		= 4'd5;
@@ -29,7 +29,7 @@ localparam STATE_RESTART			= 4'd10;
 localparam STATE_NACK		 		= 4'd11;
 
 localparam STATE_STOP				= 4'd12;
-localparam STATE_FINISH				= 4'd13;
+
 
 reg [7:0]  Data_in  = 8'd0;
 reg [7:0]  Reg_addr = 8'd0;
@@ -144,7 +144,7 @@ always @ (*) begin
 			end
 		end
 
-		else if((count<= 9'd153) & (SDA_in == 1'b0)) begin
+		else if((count<= 9'd154) & (SDA_in == 1'b0)) begin
 			next_state = STATE_ACK_REG;
 		end
 
@@ -188,18 +188,16 @@ always @ (*) begin
 		end
 
 		STATE_STOP : 		
-		if ((count == 9'd234) & (RW_sel == 1'b0)) begin
+		if ((SCL_out == 1'b1) & (SDA_out == 1'b1)) begin
 			next_state = STATE_IDLE;
 		end
-		else if ((count == 9'd314) & (RW_sel == 1'b1)) begin
-			next_state = STATE_IDLE;
-		end
+
 		else begin
 			next_state = STATE_STOP;
 		end
 		
 		STATE_RESTART :
-		if (count == 9'd162) begin
+		if ( (count == 8'd162) & (SDA_out == 1'b0) ) begin
 			next_state = STATE_DEV_SEL;
 		end
 		else begin
@@ -346,19 +344,24 @@ always @ (posedge clk) begin
 			SDA_out <= 1'b1;
 		end
 
-		STATE_STOP : //Write STOP bit on SDA (From Master to Slave)
+		STATE_STOP : //Wait STOP Signal (SCL High Signal)
 		begin
-			SDA_out <= 1'b1;
+			if(SCL_out == 1'b1) begin
+				SDA_out <= 1'b1;
+			end
+			else begin
+				SDA_out <= 1'b0;
+			end
 		end
 		
 		STATE_RESTART : //Write RESTART bit on SDA (From Master to Slave)
 		begin
-			if(count == 9'd162) begin
+			bit_count <= 4'd8;
+			if(count >= 9'd159) begin
 				SDA_out <= 1'b0;
-				bit_count <= 4'd7;
 			end
 			else begin
-				SDA_out <= 1'b0;
+				SDA_out <= 1'b1;
 			end
 		end
 
@@ -373,12 +376,10 @@ always @ (posedge clk) begin					     					// count is clk based count     		   
 	end							        								// # a Period of count = 2 period of clk # //
 																		// ####################################### //
 	else begin															/////////////////////////////////////////////
-		if((count == 9'd242) & (RW_sel == 1'b0)) begin							   								   //
+		if( (state == STATE_STOP) & (SCL_out & SDA_out)) begin							   						   //
 			count <= 9'd0;										   												   //
 		end												   														   //
-		else if((count == 9'd322) & (RW_sel == 1'b1)) begin						   								   //
-			count <= 9'd0;										   												   //
-		end												  														   //
+										  																		   //
 		else begin											   													   //
 			count <= count + 8'd1;									   											   //
 		end									  			   														   //
@@ -388,11 +389,8 @@ end														   														   //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 								    								// SCL_count :				   				   //
 always @ (posedge clk) begin						 				// SCL_count is clk based count for SCL_out    //
-	if (state == STATE_STOP) begin				 					// a Period of SCL_count = 2 period of clk     //
-		SCL_out <= 1'd0;											// I2C Protocol Start Condition is -   		   //
-		SCL_count <= 4'd0;											// SDA being pulled low while SCL stays high   //
-	end																// I2C Protocol End Condition is -        	   //
-	else if ( STATE_START <= state ) begin							// SCL rises, followed by SDA rising    	   //
+																	// I2C Protocol End Condition is -        	   //
+	if ( STATE_START <= state ) begin								// SCL rises, followed by SDA rising    	   //
 		if (SCL_count == 3) begin									// SCL_out :           					       //
 			SCL_count <= 4'd0;										// SCL_out is SCL_count based clk      	       //
 			SCL_out <= !SCL_out;									// ########################################### //
