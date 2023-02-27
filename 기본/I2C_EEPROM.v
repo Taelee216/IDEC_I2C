@@ -35,8 +35,8 @@ reg 	  Enable = 1'b0;
 reg [7:0] e_count = 8'd0;
 reg [3:0] bit_count = 4'd0;
 
-reg [3:0] state = STATE_IDLE;
-reg [3:0] next_state = STATE_IDLE;
+reg [3:0] state_E = STATE_DEV_SEL;
+reg [3:0] next_state = STATE_DEV_SEL;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 initial
@@ -54,27 +54,27 @@ end
 
 always @ (posedge SCL) begin
 	if(!rst)begin
-		state <= STATE_IDLE;
+		state_E <= STATE_DEV_SEL;
 	end
 
 	else begin
-		state <= next_state;
+		state_E <= next_state;
 	end
 end
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 always @ (SCL) begin
-	case (state)
-
+	case (state_E)
+/*
 		STATE_IDLE : 
-		if ( (SCL == 1'b0) & (SDA_out == 1'b0) ) begin
+		if  (SDA_out == 1'b0)  begin
 			next_state = STATE_DEV_SEL;
 		end
 		else begin
 			next_state = STATE_IDLE;
 		end
-
+*/
 		STATE_DEV_SEL : 				
 		if (e_count == 8'd6) begin
 			next_state = STATE_RW;
@@ -88,15 +88,15 @@ always @ (SCL) begin
 			next_state = STATE_ACK_RW;
 		end
 		else begin
-			next_state = STATE_IDLE;
+			next_state = STATE_DEV_SEL;
 		end
 		
 		STATE_ACK_RW : 				
-		if ( (e_count == 8'd8) & (SDA_in == 1'b0) ) begin
+		if ( (e_count == 8'd8) & (SDA_in == 1'b0) & (Dev_addr == 7'b1111111) ) begin
 			next_state = STATE_REG_SEL;
 		end
 		else begin
-			next_state = STATE_IDLE;
+			next_state = STATE_DEV_SEL;
 		end
 		
 		STATE_REG_SEL : 				
@@ -148,7 +148,7 @@ end
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 always @ (SCL) begin
-	case (state)
+	case (state_E)
 
 		STATE_DEV_SEL : 
 		begin
@@ -237,7 +237,7 @@ always @ ( posedge SCL ) begin
 		e_count <= 8'd0;
 	end
 	else begin
-		if( state > STATE_IDLE) begin
+		if( state_E > STATE_IDLE) begin
 			e_count <= e_count + 8'd1;
 		end
 		else begin
