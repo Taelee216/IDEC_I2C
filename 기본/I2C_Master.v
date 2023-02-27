@@ -386,7 +386,7 @@ always @ (posedge clk) begin					     					// count is clk based count     		   
 	end							        								// # a Period of count = 2 period of clk # //
 																		// ####################################### //
 	else begin															/////////////////////////////////////////////
-		if( (SDA_in == 1'b1) & (state != STATE_READ) ) begin																				   //
+		if( (SDA_in == 1'b1) & (state != STATE_READ) ) begin													   //
 			count <= 9'd0;																						   //
 		end																										   //
 		else begin																								   //
