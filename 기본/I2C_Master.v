@@ -5,7 +5,7 @@ input	wire [7:0] _Reg_addr,
 input	wire [6:0] _Dev_addr,
 input	wire	   clk,rst,_RW_sel,
 
-input	wire	 SDA_in,
+input	wire	 _SDA_in,
 output	reg	 	 SDA_out,
 output	reg	 	 SCL_out
 
@@ -41,6 +41,8 @@ reg [3:0]  next_state = STATE_IDLE;
 
 reg [3:0]  bit_count = 4'd0;
 reg [3:0]  SCL_count = 4'd0;
+
+reg 	   SDA_in;
 
 wire	   SDA;
 wire	   SCL;
@@ -274,6 +276,9 @@ always @ (posedge clk) begin
 
 		STATE_ACK_RW :			//Read ARK bit (From Slave to Master)
 		begin	
+
+			SDA_in <= _SDA_in;
+
 			if(count == 9'd82) begin
 				SDA_out <= 1'b0;
 				bit_count <= 4'd8;
@@ -305,6 +310,9 @@ always @ (posedge clk) begin
 
 		STATE_ACK_REG :			//Read ARK bit (From Slave to Master)
 		begin	
+
+			SDA_in <= _SDA_in;
+
 			if(count == 9'd154 ) begin
 				SDA_out <= 1'b0;
 				bit_count <= 4'd8;
@@ -333,6 +341,7 @@ always @ (posedge clk) begin
 		STATE_READ : //Read Data [7:0] on SDA (From Slave to Master)
 		begin
 			SDA_out <= 1'b0;
+			SDA_in <= _SDA_in;
 		end
 
 		STATE_ACK_DATA : 	//Read ARK bit (From Slave to Master)
@@ -377,7 +386,7 @@ always @ (posedge clk) begin					     					// count is clk based count     		   
 	end							        								// # a Period of count = 2 period of clk # //
 																		// ####################################### //
 	else begin															/////////////////////////////////////////////
-		if(SDA_in == 1'b1) begin																				   //
+		if( (SDA_in == 1'b1) & (state != STATE_READ) ) begin																				   //
 			count <= 9'd0;																						   //
 		end																										   //
 		else begin																								   //
