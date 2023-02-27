@@ -29,7 +29,6 @@ localparam STATE_RESTART			= 4'd10;
 localparam STATE_NACK		 		= 4'd11;
 
 localparam STATE_STOP				= 4'd12;
-localparam STATE_FINISH				= 4'd13;
 
 reg [7:0]  Data_in  = 8'd0;
 reg [7:0]  Reg_addr = 8'd0;
