@@ -76,7 +76,7 @@ always @ (SCL) begin
 		end
 */
 		STATE_DEV_SEL : 				
-		if (e_count == 8'd6) begin
+		if (e_count == 8'd7) begin
 			next_state = STATE_RW;
 		end
 		else begin
@@ -84,7 +84,7 @@ always @ (SCL) begin
 		end
 		
 		STATE_RW : 				
-		if (e_count == 8'd7) begin
+		if (e_count == 8'd8) begin
 			next_state = STATE_ACK_RW;
 		end
 		else begin
@@ -92,7 +92,7 @@ always @ (SCL) begin
 		end
 		
 		STATE_ACK_RW : 				
-		if ( (e_count == 8'd8) & (SDA_in == 1'b0) & (Dev_addr == 7'b1111111) ) begin
+		if ( (e_count == 8'd9) & (SDA_in == 1'b0) & (Dev_addr == 7'b1111111) ) begin
 			next_state = STATE_REG_SEL;
 		end
 		else begin
@@ -100,7 +100,7 @@ always @ (SCL) begin
 		end
 		
 		STATE_REG_SEL : 				
-		if (e_count == 8'd16) begin
+		if (e_count == 8'd17) begin
 			next_state = STATE_ACK_REG;
 		end
 		else begin
@@ -108,15 +108,15 @@ always @ (SCL) begin
 		end
 
 		STATE_ACK_REG : 				
-		if ( (e_count == 8'd17) & (SDA_in == 1'b0) ) begin
+		if ( (e_count == 8'd18) & (SDA_in == 1'b0) ) begin
 			next_state = STATE_WRITE;
 		end
 		else begin
-			next_state = STATE_IDLE;
+			next_state = STATE_DEV_SEL;
 		end
 
 		STATE_WRITE : 				
-		if (e_count == 8'd25) begin
+		if (e_count == 8'd26) begin
 			next_state = STATE_ACK_DATA;
 		end
 		else begin
@@ -147,34 +147,32 @@ end
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-always @ (SCL) begin
+always @ (posedge SCL) begin
 	case (state_E)
 
 		STATE_DEV_SEL : 
 		begin
-			Dev_addr [bit_count - 1'b1] <= SDA_out;
-
-			if( ( (e_count >= 8'dx) | (e_count >= 8'd6) ) & (bit_count == 4'd1) & (Dev_addr == 7'b1111111) ) begin
-				Enable <= 1'b1;
-				SDA_in <= 1'b0;
+			if(bit_count == 4'd0) begin
+				if(Dev_addr == 7'b1111111) begin
+					SDA_in <= 1'b0;
+				end
+				else begin
+					SDA_in <= 1'b1;
+				end
 			end
-
 			else begin
-				Enable <= 1'b0;
-				SDA_in <= 1'b1;
+				Dev_addr [bit_count - 1'b1] <= SDA_out;
 			end
-
 		end
 		
 		STATE_RW :
 		begin
-			//if( (e_count == 8'dxx) & (SDA_out == 1'b1) ) begin
+			if(SDA_out == 1'b1)begin
 				RW_sel <= 1'b1;
-			//end
-			//else begin
+			end
+			else begin
 				RW_sel <= 1'b0;
-			//end
-
+			end
 		end
 
 		STATE_ACK_RW :
@@ -184,14 +182,19 @@ always @ (SCL) begin
 		
 		STATE_REG_SEL : 
 		begin
+			if(bit_count != 4'd0) begin
 			Reg_addr [bit_count - 4'd1] <= SDA_out;
-
-			if( (e_count >= 8'd16) & (bit_count == 4'd1) ) begin
-				SDA_in <= 1'b0;
 			end
+
 			else begin
-				SDA_in <= 1'b1;
-			end			
+				if( (e_count == 8'd18) & (bit_count != 4'd0) ) begin
+					SDA_in <= 1'b1;
+				end
+				else begin
+					SDA_in <= 1'b0;
+				end	
+		
+			end
 
 		end
 
@@ -233,7 +236,7 @@ end
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 always @ ( posedge SCL ) begin
-	if(!rst)begin
+	if((!rst) | (SDA_in==1'b1))begin
 		e_count <= 8'd0;
 	end
 	else begin
@@ -249,8 +252,15 @@ end
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 always @ ( posedge SCL ) begin
-	if(!rst)begin
+	if((!rst) | (SDA_in==1'b1))begin
 		bit_count <= 4'd7;
+		SDA_in <= 1'b0;
+		
+		Dev_addr <= 7'd0;
+		Data <= 8'd0;
+		RW_sel <= 1'b0;
+		Enable <= 1'b0;
+
 	end
 
 	else begin
