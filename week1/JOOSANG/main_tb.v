@@ -33,7 +33,7 @@ end
 initial begin
     $dumpfile("main.vcd");
     $dumpvars;
-    #100
+    #1000
     $finish;
 end
 
